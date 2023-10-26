@@ -17,13 +17,7 @@ void send_signal()
 
 ISR(INT0_vect)
 {
-    send_signal();
-    //button_pressed = 1;
-}
-
-int is_button_pressed()
-{
-    return PINB & (1 << BUTTON_PIN);
+    button_pressed = 1;
 }
 
 int main()
@@ -33,6 +27,13 @@ int main()
 
     // Set output pin low.
     PORTB &= ~(1 << OUTPUT_PIN);
+
+    // Disable unused peripherals for power saving.
+    ADCSRA &= ~(1 << ADEN); // Disable ADC.
+
+    // // Add PCINT1 interrupt.
+    // GIMSK |= (1 << PCIE);
+    // PCMSK |= (1 << PCINT1);
 
     // Enable the INT0 interrupt.
     GIMSK |= (1 << INT0);
@@ -45,43 +46,17 @@ int main()
     sei();
 
     // Set sleep mode to power down.
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    set_sleep_mode(SLEEP_MODE_IDLE);
 
     // Infinite loop.
     while (1)
     {
         sleep_mode();
-        _delay_ms(2000);
 
-        // // Wait for button press.
-        // while (!button_pressed)
-        // {
-        //     // Sleep until an interrupt occurs.
-        //     sleep_mode();
-        // }
-
-        // // Wait for button release.
-        // uint8_t sleep_count = 0;
-        // do
-        // {
-        //     _delay_ms(100);
-        //     sleep_count++;
-        // } while (sleep_count < 10 && is_button_pressed());
-
-        // // Send the signal...
-        // if (sleep_count < 10)
-        // {
-        //     // ...immediately.
-        //     send_signal();
-        // }
-        // else
-        // {
-        //     // ...after 5 seconds.
-        //     _delay_ms(5000);
-        //     send_signal();
-        // }
-
-        // // Clear the button pressed flag.
-        // button_pressed = 0;
+        if (button_pressed)
+        {
+            button_pressed = 0;
+            send_signal();
+        }
     }
 }
