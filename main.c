@@ -15,14 +15,14 @@ volatile uint8_t button_pressed = 0;
 
 void send_signal()
 {
-    PORTB |= (1 << OUTPUT_PIN);
-    _delay_ms(SIGNAL_DURATION_MS);
     PORTB &= ~(1 << OUTPUT_PIN);
+    _delay_ms(SIGNAL_DURATION_MS);
+    PORTB |= (1 << OUTPUT_PIN);
 }
 
 short is_button_pressed()
 {
-    return PINB & (1 << BUTTON_PIN);
+    return !(PINB & (1 << BUTTON_PIN));
 }
 
 short is_long_button_press()
@@ -56,15 +56,15 @@ int main()
     // Set output pin as output.
     DDRB |= (1 << OUTPUT_PIN);
 
-    // Set output pin low.
-    PORTB &= ~(1 << OUTPUT_PIN);
+    // Set output pin high.
+    PORTB |= (1 << OUTPUT_PIN);
 
     // Disable unused peripherals for power saving.
     ADCSRA &= ~(1 << ADEN); // Disable ADC.
 
     // Enable the INT0 interrupt.
     GIMSK |= (1 << INT0);
-    MCUCR |= (1 << ISC00) | (1 << ISC01);
+    MCUCR |= (1 << ISC01);
 
     // Set the button pin as an input.
     DDRB &= ~(1 << BUTTON_PIN);
